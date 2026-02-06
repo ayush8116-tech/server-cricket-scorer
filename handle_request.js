@@ -27,11 +27,11 @@ const createResponse = (content, status) => {
 
 const undoHandler = () => {
   const deliveries = getDeliveries();
-  const currentDelivery = deliveries[deliveries.length - 1];
   if (deliveries.length > 1) {
     deliveries.pop();
   }
-
+  
+  const currentDelivery = deliveries[deliveries.length - 1];
   writeToJson("./counter.json", JSON.stringify(deliveries));
   const body = getHtmlTemplate(currentDelivery);
 

@@ -3,21 +3,21 @@ const updateOverCount = (overCount, ballCount) => {
     return { overCount, ballCount: 1 };
   }
 
-  if(ballCount > 5) {
-    return {overCount : +overCount + 1, ballCount : 0}
+  if (ballCount >= 5) {
+    return { overCount: +overCount + 1, ballCount: 0 };
   }
-  
-  return { overCount: +overCount, ballCount : +ballCount + 1 };
-}
+
+  return { overCount: +overCount, ballCount: +ballCount + 1 };
+};
 
 const summariseOverDetails = (overDetails) => {
-  return +`${overDetails.overCount}.${overDetails.ballCount}`
-}
+  return +`${overDetails.overCount}.${overDetails.ballCount}`;
+};
 
 const updateBalls = (over) => {
   const [overCount, ballCount] = String(over).split(".");
   const overDetails = updateOverCount(overCount, ballCount);
-  return summariseOverDetails(overDetails)
+  return summariseOverDetails(overDetails);
 };
 
 export const generateDelivery = (delivery) => {
