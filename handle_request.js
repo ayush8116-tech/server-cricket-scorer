@@ -32,7 +32,9 @@ const createResponse = (content, status) => {
 
 const decrementHandler = () => {
   const counter = getValue();
-  counter.value = dec(counter.value)
+  if(counter.value > 0) {
+    counter.value = dec(counter.value)
+  }
   writeToJson(counter);
   const body = getCounterHtmlTemplate(counter.value);
 
