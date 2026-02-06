@@ -1,25 +1,20 @@
-const inc = (value) => value + 1;
-const dec = (value) => value - 1;
-
-const getCounterHtmlTemplate = (value) => {
-  return `<html>
-  <body>
-    <h1>Counter : ${value}</h1>
-    <h3><a href="/counter/inc">INC</a>    <a href="/counter/dec">DEC</a></h3>
-    <h3><a href="/">RESET</a></h3>
-  </body>
-</html>`;
-};
+import { generateDelivery } from "./score_lib.js";
+import { getHtmlTemplate } from "./html_template.js";
 
 const readFromJson = (path) => Deno.readTextFileSync(path);
+const writeToJson = (path, content) => Deno.writeTextFileSync(path, content);
 
-const getValue = () => {
+const getDeliveries = () => {
   const data = readFromJson("./counter.json");
   return JSON.parse(data);
 };
 
-const writeToJson = (counter) =>
-  Deno.writeTextFileSync("./counter.json", JSON.stringify(counter));
+const write = (delivery) => {
+  const deliveries = getDeliveries();
+  deliveries.push(delivery);
+
+  writeToJson("./counter.json", JSON.stringify(deliveries));
+};
 
 const createResponse = (content, status) => {
   return new Response(content, {
@@ -30,29 +25,36 @@ const createResponse = (content, status) => {
   });
 };
 
-const decrementHandler = () => {
-  const counter = getValue();
-  if(counter.value > 0) {
-    counter.value = dec(counter.value)
+const undoHandler = () => {
+  const deliveries = getDeliveries();
+  const currentDelivery = deliveries[deliveries.length - 1];
+  if (deliveries.length > 1) {
+    deliveries.pop();
   }
-  writeToJson(counter);
-  const body = getCounterHtmlTemplate(counter.value);
+
+  writeToJson("./counter.json", JSON.stringify(deliveries));
+  const body = getHtmlTemplate(currentDelivery);
 
   return createResponse(body, 201);
 };
 
-const incrementHandler = () => {
-  const counter = getValue();
-  counter.value = inc(counter.value);
-  writeToJson(counter);
-  const body = getCounterHtmlTemplate(counter.value);
+const incrementHandler = (delta) => {
+  const deliveries = getDeliveries();
+  const delivery = deliveries[deliveries.length - 1];
+  console.log({ deliveries });
+
+  delivery.score = delta;
+  const newDelivery = generateDelivery(delivery);
+  write(newDelivery);
+  const body = getHtmlTemplate(newDelivery);
   return createResponse(body, 201);
 };
 
 const resetHandler = () => {
-  const counter = { value: 0 };
-  writeToJson(counter);
-  const body = getCounterHtmlTemplate(counter.value);
+  const delivery = { over: 0, score: 0, total: 0 };
+  const deliveries = [delivery];
+  writeToJson("./counter.json", JSON.stringify(deliveries));
+  const body = getHtmlTemplate(delivery);
   return createResponse(body, 200);
 };
 
@@ -62,8 +64,13 @@ export const handleRequest = (request) => {
 
   const handlerMapper = {
     "/": () => resetHandler(),
-    "/counter/inc": () => incrementHandler(),
-    "/counter/dec": () => decrementHandler(),
+    "/counter/one": () => incrementHandler(1),
+    "/counter/two": () => incrementHandler(2),
+    "/counter/three": () => incrementHandler(3),
+    "/counter/four": () => incrementHandler(4),
+    "/counter/five": () => incrementHandler(5),
+    "/counter/six": () => incrementHandler(6),
+    "/counter/undo": () => undoHandler(),
   };
 
   const handler = handlerMapper[pathname];
