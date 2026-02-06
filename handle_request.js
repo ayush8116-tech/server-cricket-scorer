@@ -1,3 +1,6 @@
+const inc = (value) => value + 1;
+const dec = (value) => value - 1;
+
 const getCounterHtmlTemplate = (value) => {
   return `<html>
   <body>
@@ -10,40 +13,13 @@ const getCounterHtmlTemplate = (value) => {
 
 const readFromJson = (path) => Deno.readTextFileSync(path);
 
-const getValues = () => {
+const getValue = () => {
   const data = readFromJson("./counter.json");
   return JSON.parse(data);
 };
 
-const getCounterDetails = (value, index) => {
-  const counterDetails = {
-    previous: value,
-    current: index === 0 ? value : value + 1,
-    next: null,
-    index: index + 1,
-  };
-  console.log(counterDetails.current);
-
-  return counterDetails;
-};
-
-const writeToJson = (counterDetails) => {
-  const values = getValues();
-  if (counterDetails.index > 1) {
-    values[values.length - 1].next = counterDetails.current;
-  }
-  values.push(counterDetails);
-  console.log(values);
-  Deno.writeTextFileSync("./counter.json", JSON.stringify(values));
-};
-
-const getCounterValueAndIndex = () => {
-  const values = getValues();
-  const counter = values[values.length - 1];
-  console.log({ currentCounter: counter });
-
-  return { value: counter.current, index: counter.index };
-};
+const writeToJson = (counter) =>
+  Deno.writeTextFileSync("./counter.json", JSON.stringify(counter));
 
 const createResponse = (content, status) => {
   return new Response(content, {
@@ -55,26 +31,26 @@ const createResponse = (content, status) => {
 };
 
 const decrementHandler = () => {
-  const values = getValues()
-  const counterDetails = values[values.length - 1]
-  writeToJson(counterDetails);
-  const body = getCounterHtmlTemplate(counterDetails.previous);
+  const counter = getValue();
+  counter.value = dec(counter.value)
+  writeToJson(counter);
+  const body = getCounterHtmlTemplate(counter.value);
 
   return createResponse(body, 201);
 };
 
 const incrementHandler = () => {
-  const { value, index } = getCounterValueAndIndex();
-  const counterDetails = getCounterDetails(value, index);
-  writeToJson(counterDetails);
-  const body = getCounterHtmlTemplate(counterDetails.current);
+  const counter = getValue();
+  counter.value = inc(counter.value);
+  writeToJson(counter);
+  const body = getCounterHtmlTemplate(counter.value);
   return createResponse(body, 201);
 };
 
 const resetHandler = () => {
-  const counterDetails = getCounterDetails(0, 0, 0);
-  writeToJson(counterDetails);
-  const body = getCounterHtmlTemplate(0);
+  const counter = { value: 0 };
+  writeToJson(counter);
+  const body = getCounterHtmlTemplate(counter.value);
   return createResponse(body, 200);
 };
 

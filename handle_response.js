@@ -1,5 +1,5 @@
 const getResponse = async (ctrValue) => {
-  const res = await fetch("http://localhost:8000/counter/inc", {
+  const res = await fetch("http://localhost:8000/", {
     method: "POST",
     header: { "content-type": "text/html" },
     body: ctrValue,
