@@ -1,4 +1,4 @@
-import { processDeliveries, startMatch } from "./score_lib.js";
+import { processDeliveries, startMatch } from "./score_manager.js";
 
 const createResponse = (content, status) => {
   return new Response(content, {
@@ -24,8 +24,6 @@ const createResponseBody = (match) => {
   return updatedPageWithInning;
 };
 
-
-
 const scoreHandler = (runs) => {
   const matchDetail = processDeliveries(runs);
 
@@ -42,7 +40,6 @@ const resetHandler = () => {
 
 export const handleRequest = (request) => {
   const { pathname } = new URL(request.url);
-  console.log(pathname);
 
   const handlerMapper = {
     "/": () => resetHandler(),

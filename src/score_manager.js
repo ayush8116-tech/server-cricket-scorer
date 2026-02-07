@@ -22,7 +22,7 @@ const updateBalls = (over) => {
 
 const startOver = (overCount, innings) => {
   const inningCount = innings.summary.inning;
-  innings[inningCount].push({ over: overCount, deliveries: [] });
+  innings[inningCount - 1].push({ over: overCount, deliveries: [] });
 };
 
 const startInning = (innings, inningNumber) => {
@@ -41,7 +41,7 @@ const readFromJson = (path) => {
 };
 
 export const startMatch = () => {
-  const summary = { over: 0, total: 0, inning: 0, target: 0 };
+  const summary = { over: 0, total: 0, inning: 1, target: 0 };
   const innings = startInning({}, 0);
   innings.summary = summary;
   startOver(0, innings);
@@ -57,18 +57,19 @@ const addData = (delivery, matchData) => {
   matchData.summary.total += delivery.run;
   const overCount = updateBalls(over);
   matchData.summary["over"] = overCount;
-
+  matchData.summary["inning"] = inning;
   return matchData;
 };
 
 const addDelivery = (run, innings) => {
-  const matchData = { ...innings };
+  let matchData = { ...innings };
 
-  const { over } = matchData.summary;
+  const { over, inning } = matchData.summary;
   const delivery = { run };
   if (hasOverEnd(over)) {
     startOver(over, matchData);
   }
+
   const updatedData = addData(delivery, matchData);
   return updatedData;
 };
