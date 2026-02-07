@@ -1,24 +1,4 @@
-import {
-  generateDelivery,
-  processDeliveries,
-  startMatch,
-} from "./score_lib.js";
-import { getHtmlTemplate } from "./html_template.js";
-
-const readFromJson = (path) => Deno.readTextFileSync(path);
-const writeToJson = (path, content) => Deno.writeTextFileSync(path, content);
-
-const getDeliveries = () => {
-  const data = readFromJson("./data/score_data.json");
-  return JSON.parse(data);
-};
-
-const write = (delivery) => {
-  const deliveries = getDeliveries();
-  deliveries.push(delivery);
-
-  writeToJson("./data/score_data.json", JSON.stringify(deliveries));
-};
+import { processDeliveries, startMatch } from "./score_lib.js";
 
 const createResponse = (content, status) => {
   return new Response(content, {
@@ -29,31 +9,32 @@ const createResponse = (content, status) => {
   });
 };
 
-const undoHandler = () => {
-  const deliveries = getDeliveries();
-  if (deliveries.length > 1) {
-    deliveries.pop();
-  }
+const scorerPage = Deno.readTextFileSync("./src/score_page.html");
 
-  const currentDelivery = deliveries[deliveries.length - 1];
-  writeToJson("./data/score_data.json", JSON.stringify(deliveries));
-  const body = getHtmlTemplate(currentDelivery);
-
-  return createResponse(body, 201);
+const createResponseBody = (match) => {
+  const updatedPageWithTotal = scorerPage.replace("${total}", match.total);
+  const updatedPageWithOver = updatedPageWithTotal.replace(
+    "${over}",
+    match.over,
+  );
+  const updatedPageWithInning = updatedPageWithOver.replace(
+    "${inning}",
+    match.inning + 1,
+  );
+  return updatedPageWithInning;
 };
 
-const incrementHandler = (delta) => {
-  const matchDetail = processDeliveries(delta);
+const scoreHandler = (runs) => {
+  const matchDetail = processDeliveries(runs);
 
-  // const newDelivery = generateDelivery(delivery);
-  // write(newDelivery);
-  const body = getHtmlTemplate(matchDetail);
+  const body = createResponseBody(matchDetail);
   return createResponse(body, 201);
 };
 
 const resetHandler = () => {
-  const { summary } = startMatch();
-  const body = getHtmlTemplate(summary);
+  const summary = startMatch();
+
+  const body = createResponseBody(summary);
   return createResponse(body, 200);
 };
 
@@ -63,14 +44,13 @@ export const handleRequest = (request) => {
 
   const handlerMapper = {
     "/": () => resetHandler(),
-    "/counter/zero": () => incrementHandler(0),
-    "/counter/one": () => incrementHandler(1),
-    "/counter/two": () => incrementHandler(2),
-    "/counter/three": () => incrementHandler(3),
-    "/counter/four": () => incrementHandler(4),
-    "/counter/five": () => incrementHandler(5),
-    "/counter/six": () => incrementHandler(6),
-    // "/counter/undo": () => undoHandler(),
+    "/counter/zero": () => scoreHandler(0),
+    "/counter/one": () => scoreHandler(1),
+    "/counter/two": () => scoreHandler(2),
+    "/counter/three": () => scoreHandler(3),
+    "/counter/four": () => scoreHandler(4),
+    "/counter/five": () => scoreHandler(5),
+    "/counter/six": () => scoreHandler(6),
   };
 
   const handler = handlerMapper[pathname];
