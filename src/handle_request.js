@@ -9,7 +9,7 @@ const createResponse = (content, status) => {
   });
 };
 
-const scorerPage = Deno.readTextFileSync("./src/score_page.html");
+const scorerPage = Deno.readTextFileSync("./pages/score_page.html");
 
 const createResponseBody = (match) => {
   const updatedPageWithTotal = scorerPage.replace("${total}", match.total);
@@ -23,6 +23,8 @@ const createResponseBody = (match) => {
   );
   return updatedPageWithInning;
 };
+
+
 
 const scoreHandler = (runs) => {
   const matchDetail = processDeliveries(runs);
