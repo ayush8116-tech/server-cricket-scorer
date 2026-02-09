@@ -9,10 +9,11 @@ const createResponse = (content, status) => {
   });
 };
 
-const scorerPage = Deno.readTextFileSync("./pages/score_page.html");
+const SCORER_PAGE_TEMPLATE = Deno.readTextFileSync("./pages/score_page.html");
+const WINNING_PAGE_TEMPLATE = Deno.readTextFileSync("./pages/winning_page.html");
 
 const createResponseBody = (match) => {
-  const updatedPageWithTotal = scorerPage.replace("${total}", match.total);
+  const updatedPageWithTotal = SCORER_PAGE_TEMPLATE.replace("${total}", match.total);
   const updatedPageWithOver = updatedPageWithTotal.replace(
     "${over}",
     match.over,
@@ -22,7 +23,9 @@ const createResponseBody = (match) => {
     match.inning,
   );
   const updatedPageWithTarget = updatedPageWithInning.replace("${target}", match.target)
-
+  if(match.winningTeam) {
+    return WINNING_PAGE_TEMPLATE.replace("${winningTeam}" ,match.winningTeam)
+  }
   return updatedPageWithTarget;
 };
 

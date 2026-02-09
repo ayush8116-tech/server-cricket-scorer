@@ -27,3 +27,8 @@ request handler will just replace the value in data string and attach it in resp
 
 
 input : 
+
+
+target + 1
+change inning index to literal inning number
+add teams score in summary of total
