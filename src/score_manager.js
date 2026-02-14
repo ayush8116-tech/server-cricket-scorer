@@ -1,3 +1,11 @@
+const writeToJson = (path, content) =>
+  Deno.writeTextFileSync(path, JSON.stringify(content));
+
+const readFromJson = (path) => {
+  const data = Deno.readTextFileSync(path);
+  return JSON.parse(data);
+};
+
 const updateOverCount = (overCount, ballCount) => {
   if (ballCount === undefined) {
     return { overCount, ballCount: 1 };
@@ -20,7 +28,7 @@ const updateBalls = (over) => {
   return summariseOverDetails(overDetails);
 };
 
-const startOver = (overCount, innings) => {
+const startNewOver = (overCount, innings) => {
   const inningCount = innings.summary.inning;
 
   innings[inningCount].push({ over: overCount, deliveries: [] });
@@ -34,38 +42,40 @@ const startInning = (innings, inningNumber) => {
   return matchData;
 };
 
-const endInning = (matchData) => {
-  const updatedMatchData = startInning(matchData, 2);
-  updatedMatchData.summary["target"] = matchData.summary["total"] + 1;
-  updatedMatchData.summary["team1Score"] = matchData.summary["total"];
-  updatedMatchData.summary["total"] = 0;
-  updatedMatchData.summary["over"] = 0;
-  updatedMatchData.summary["inning"] = matchData.summary.inning + 1;
-  startOver(matchData.summary.over, updatedMatchData);
-  return updatedMatchData;
+const updateSummary = ({ summary }, matchData) => {
+  summary["target"] = matchData.summary["total"] + 1;
+  summary["team1Score"] = matchData.summary["total"];
+  summary["total"] = 0;
+  summary["over"] = 0;
+  summary["wicket"] = 0;
+  summary["inning"] = matchData.summary.inning + 1;
 };
 
-const writeToJson = (path, content) =>
-  Deno.writeTextFileSync(path, JSON.stringify(content));
+const endInning = (matchData) => {
+  const updatedMatchData = startInning(matchData, 2);
 
-const readFromJson = (path) => {
-  const data = Deno.readTextFileSync(path);
-  return JSON.parse(data);
+  updateSummary(matchData, updatedMatchData);
+  startNewOver(matchData.summary.over, updatedMatchData);
+
+  return updatedMatchData;
 };
 
 export const startMatch = () => {
   const summary = {
     over: 0,
     total: 0,
+    wicket: 0,
     inning: 1,
-    extras : 0,
+    extras: 0,
     target: 0,
     team1Score: 0,
     team2Score: 0,
   };
+
   const innings = startInning({}, 1);
+
   innings.summary = summary;
-  startOver(0, innings);
+  startNewOver(0, innings);
   writeToJson("./data/match.json", innings);
 
   return innings.summary;
@@ -83,32 +93,47 @@ const endMatch = (match) => {
 };
 
 const hasOverFinished = (over) => over > 0 && over === Math.floor(over);
-const hasInningFinished = ({ over, inning }) => over === 2 && inning === 1;
+const hasInningFinished = ({ over, inning, wicket }) =>
+  (over === 2 && inning === 1) || wicket >= 10;
 const hasMatchFinished = (match) =>
   match.inning === 2 &&
   match.total >= match.target;
 
-const addData = (delivery, matchData, isExtra) => {
+const addDelivery = (delivery, matchData, isExtra) => {
   const { inning, over } = matchData.summary;
 
   matchData[inning][Math.floor(over)].deliveries.push(delivery);
   matchData.summary.total += isExtra ? delivery.extraRun : delivery.batterRun;
+  matchData.summary.wicket += delivery.isWicket ? 1 : 0;
+
   const overCount = isExtra ? over : updateBalls(over);
-  matchData.summary["over"] = overCount;
-  matchData.summary["inning"] = inning;
+
+  matchData.summary.over = overCount;
+  matchData.summary.inning = inning;
 
   return matchData;
 };
 
-const addDelivery = (run, innings, isExtra) => {
+const createDelivery = (event, isExtra, summary) => {
+  let delivery = { batterRun: event, extraRun: 0, isWicket: false };
+
+  if (event === "wicket") {
+    delivery = { batterRun: 0, extraRun: 0, isWicket: true };
+  }
+
+  if (isExtra) {
+    delivery = { batterRun: 0, extraRun: event, isWicket: false };
+    summary.extras += event;
+  }
+
+  return delivery;
+};
+
+const processDelivery = (event, innings, isExtra) => {
   let matchData = { ...innings };
 
   const { over } = matchData.summary;
-  let delivery = { batterRun: run, extraRun: 0 };
-  if (isExtra) {
-    delivery = { batterRun: 0, extraRun: run };
-    matchData.summary.extras += run;
-  }
+  const delivery = createDelivery(event, isExtra, matchData.summary);
 
   if (hasMatchFinished(matchData.summary)) {
     const updatedMatchData = endMatch(matchData);
@@ -120,17 +145,17 @@ const addDelivery = (run, innings, isExtra) => {
   }
 
   if (hasOverFinished(over)) {
-    startOver(over, matchData);
+    startNewOver(over, matchData);
   }
 
-  const updatedData = addData(delivery, matchData, isExtra);
+  const updatedData = addDelivery(delivery, matchData, isExtra);
 
   return updatedData;
 };
 
-export const processDeliveries = (run, isExtra) => {
+export const processEvent = (event, isExtra) => {
   const matchData = readFromJson("./data/match.json");
-  const updatedData = addDelivery(run, matchData, isExtra);
+  const updatedData = processDelivery(event, matchData, isExtra);
   writeToJson("./data/match.json", updatedData);
 
   return updatedData.summary;
