@@ -1,1 +1,85 @@
-{"innings":[[{"over":0,"deliveries":[]}]],"summary":{"over":0,"total":0,"wicket":0,"striker":"","nonStriker":"","bowler":"","inning":1,"extras":0,"target":0,"team1Score":0,"team2Score":0}}
+{
+  "innings": [
+    [
+      {
+        "over": 0,
+        "deliveries": [
+          {
+            "batterRun": 1,
+            "extraRun": 0,
+            "isWicket": false,
+            "striker": "Ayush",
+            "nonStriker": "Vansh",
+            "bowler": "Harsh"
+          },
+          {
+            "batterRun": 1,
+            "extraRun": 0,
+            "isWicket": false,
+            "striker": "Vansh",
+            "nonStriker": "Ayush",
+            "bowler": "Harsh"
+          },
+          {
+            "batterRun": 1,
+            "extraRun": 0,
+            "isWicket": false,
+            "striker": "Ayush",
+            "nonStriker": "Vansh",
+            "bowler": "Harsh"
+          },
+          {
+            "batterRun": 1,
+            "extraRun": 0,
+            "isWicket": false,
+            "striker": "Vansh",
+            "nonStriker": "Ayush",
+            "bowler": "Harsh"
+          },
+          {
+            "batterRun": 2,
+            "extraRun": 0,
+            "isWicket": false,
+            "striker": "Ayush",
+            "nonStriker": "Vansh",
+            "bowler": "Harsh"
+          },
+          {
+            "batterRun": 1,
+            "extraRun": 0,
+            "isWicket": false,
+            "striker": "Ayush",
+            "nonStriker": "Vansh",
+            "bowler": "Harsh"
+          }
+        ]
+      },
+      {
+        "over": 1,
+        "deliveries": [
+          {
+            "batterRun": 0,
+            "extraRun": 0,
+            "isWicket": false,
+            "striker": "Vansh",
+            "nonStriker": "Ayush",
+            "bowler": "Harsh"
+          }
+        ]
+      }
+    ]
+  ],
+  "summary": {
+    "over": 1.1,
+    "total": 7,
+    "wicket": 0,
+    "striker": "Ayush",
+    "nonStriker": "Vansh",
+    "bowler": "Harsh",
+    "inning": 1,
+    "extras": 0,
+    "target": 0,
+    "team1Score": 0,
+    "team2Score": 0
+  }
+}

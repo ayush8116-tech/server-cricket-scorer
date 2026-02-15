@@ -25,6 +25,8 @@ const createResponseBody = (match) => {
     "${over}": match.over,
     "${inning}": match.inning,
     "${target}": match.target,
+    "${striker}": match.striker,
+    "${non-striker}": match.nonStriker,
   };
   
   let updatedPage = SCORER_PAGE_TEMPLATE;

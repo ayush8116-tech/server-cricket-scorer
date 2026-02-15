@@ -73,9 +73,9 @@ export const startMatch = () => {
     over: 0,
     total: 0,
     wicket: 0,
-    striker: "",
-    nonStriker: "",
-    bowler: "",
+    striker: "Ayush",
+    nonStriker: "Vansh",
+    bowler: "Harsh",
     inning: 1,
     extras: 0,
     target: 0,
@@ -94,9 +94,12 @@ export const startMatch = () => {
 
 const endMatch = (match) => {
   const { summary } = match;
+
   summary.winningTeam = summary.total >= summary.target ? "teamB" : "team1";
   summary.team2Score = summary.total;
+
   const data = readFromJson("./data/cricsheet.json");
+
   data.push(match);
   writeToJson("./data/cricsheet.json", data);
 
@@ -127,17 +130,45 @@ const addDelivery = (delivery, matchData, isExtra) => {
   return matchData;
 };
 
+const rotateStrike = (delivery, summary) => {
+  summary.striker = delivery.nonStriker;
+  summary.nonStriker = delivery.striker;
+};
+
 const createDelivery = (event, isExtra, summary) => {
-  let delivery = { batterRun: event, extraRun: 0, isWicket: false };
+  const { striker, nonStriker, bowler, over } = summary;
+  let delivery = {
+    batterRun: event,
+    extraRun: 0,
+    isWicket: false,
+    striker,
+    nonStriker,
+    bowler,
+  };
 
   if (event === "wicket") {
     delivery = { batterRun: 0, extraRun: 0, isWicket: true };
   }
 
   if (isExtra) {
-    delivery = { batterRun: 0, extraRun: event, isWicket: false };
+    delivery = {
+      batterRun: 0,
+      extraRun: event,
+      isWicket: false,
+      striker,
+      nonStriker,
+      bowler,
+    };
     summary.extras += event;
   }
+
+  if (Math.floor(over) === over && over > 0 || event % 2 !== 0) {
+    rotateStrike(delivery, summary);
+  }
+
+  // if() {
+  //   rotateStrike(delivery, summary);
+  // }
 
   return delivery;
 };
@@ -169,6 +200,7 @@ const processDelivery = (event, innings, isExtra) => {
 export const processEvent = (event, isExtra) => {
   const matchData = readFromJson("./data/match.json");
   const updatedData = processDelivery(event, matchData, isExtra);
+
   writeToJson("./data/match.json", updatedData);
 
   return updatedData.summary;
